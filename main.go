@@ -14,6 +14,7 @@ import (
 	"fmt"
 	"image"
 	"image/color"
+	"os"
 	"sync"
 	"time"
 
@@ -62,7 +63,7 @@ func main() {
 		for e := range app.NewWindow(app.Size(500, 1000), app.Title("gvsbh")).Events() {
 			switch e := e.(type) {
 			case system.DestroyEvent:
-				return
+				os.Exit(0)
 			case system.FrameEvent:
 				gtx := layout.NewContext(ops, e)
 				key.InputOp{
