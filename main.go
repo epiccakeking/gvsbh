@@ -38,6 +38,16 @@ const (
 	screenWidth  = 100
 )
 
+// Keybindings
+const (
+	LeftKey  = key.NameLeftArrow
+	RightKey = key.NameRightArrow
+	UpKey    = key.NameUpArrow
+	DownKey  = key.NameDownArrow
+	ShootKey = key.NameSpace
+	PauseKey = "P"
+)
+
 func main() {
 	game := Level{
 		CustomLogic: NewLevel1Logic(),
@@ -57,14 +67,14 @@ func main() {
 				gtx := layout.NewContext(ops, e)
 				key.InputOp{
 					Tag:  gameTag,
-					Keys: key.NameLeftArrow + "|" + key.NameRightArrow + "|" + key.NameUpArrow + "|" + key.NameDownArrow + "|" + key.NameSpace + "|P",
+					Keys: LeftKey + "|" + RightKey + "|" + UpKey + "|" + DownKey + "|" + ShootKey + "|" + PauseKey,
 				}.Add(ops)
 				for _, e := range e.Queue.Events(gameTag) {
 					// Spaghetti switches
 					switch e := e.(type) {
 					case key.Event:
 						switch e.Name {
-						case key.NameLeftArrow:
+						case LeftKey:
 							switch e.State {
 							case key.Press:
 								game.MovementVector.X = -Speed
@@ -73,7 +83,7 @@ func main() {
 									game.MovementVector.X = 0
 								}
 							}
-						case key.NameRightArrow:
+						case RightKey:
 							switch e.State {
 							case key.Press:
 								game.MovementVector.X = Speed
@@ -82,7 +92,7 @@ func main() {
 									game.MovementVector.X = 0
 								}
 							}
-						case key.NameUpArrow:
+						case UpKey:
 							switch e.State {
 							case key.Press:
 								game.MovementVector.Y = -Speed
@@ -92,7 +102,7 @@ func main() {
 								}
 
 							}
-						case key.NameDownArrow:
+						case DownKey:
 							switch e.State {
 							case key.Press:
 								game.MovementVector.Y = Speed
@@ -101,14 +111,14 @@ func main() {
 									game.MovementVector.Y = 0
 								}
 							}
-						case key.NameSpace:
+						case ShootKey:
 							switch e.State {
 							case key.Press:
 								game.Shooting = true
 							case key.Release:
 								game.Shooting = false
 							}
-						case "P":
+						case PauseKey:
 							if e.State == key.Press {
 								game.Paused = !game.Paused
 							}
