@@ -11,8 +11,6 @@ You should have received a copy of the GNU General Public License along with gvs
 package main
 
 import (
-	"math"
-
 	"gioui.org/f32"
 	"gioui.org/op"
 	"gioui.org/op/paint"
@@ -71,19 +69,12 @@ func (p *Player) Logic(g *Level) {
 		p.shotCooldown--
 	}
 	if g.Shooting && p.shotCooldown == 0 {
-		g.Entities[&Bullet{
-			position:    f32.Point{X: p.position.X + 5, Y: p.position.Y - 5},
-			team:        p.Team(),
-			orientation: math.Pi * .1,
-			speed:       1,
+		g.Entities[&AirburstRocket{
+			position: f32.Point{X: p.position.X, Y: p.position.Y - 5},
+			team:     p.Team(),
+			speed:    1,
 		}] = struct{}{}
-		g.Entities[&Bullet{
-			position:    f32.Point{X: p.position.X - 5, Y: p.position.Y - 5},
-			team:        p.Team(),
-			orientation: math.Pi * -.1,
-			speed:       1,
-		}] = struct{}{}
-		p.shotCooldown = 20
+		p.shotCooldown = 50
 	}
 }
 
