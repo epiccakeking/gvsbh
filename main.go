@@ -59,7 +59,7 @@ func main() {
 	go func() {
 		th := material.NewTheme(gofont.Collection())
 		ops := new(op.Ops)
-		for e := range app.NewWindow(app.Size(500, 1000)).Events() {
+		for e := range app.NewWindow(app.Size(500, 1000), app.Title("gvsbh")).Events() {
 			switch e := e.(type) {
 			case system.DestroyEvent:
 				return
