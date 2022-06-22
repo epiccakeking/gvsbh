@@ -13,31 +13,29 @@ package main
 import (
 	"math"
 
-	"gioui.org/f32"
-	"gioui.org/op"
-	"gioui.org/op/paint"
+	"github.com/hajimehoshi/ebiten/v2"
 )
 
 var PlayerSprite = Resource("res/Player.png")
 
 type Player struct {
-	position     f32.Point
+	x, y         float64
 	health       int
 	shotCooldown int
 }
 
-func NewPlayer(position f32.Point) *Player {
+func NewPlayer(x, y float64) *Player {
 	return &Player{
-		position: position,
-		health:   100,
+		x: x, y: y,
+		health: 100,
 	}
 }
 
-func (p *Player) Position() f32.Point {
-	return p.position
+func (p *Player) Position() (x, y float64) {
+	return p.x, p.y
 }
 
-func (p *Player) Size() float32 {
+func (p *Player) Size() float64 {
 	return 6
 }
 
@@ -45,40 +43,37 @@ func (p *Player) Team() Team {
 	return PlayerTeam
 }
 
-func (p *Player) Draw(ops *op.Ops) {
-	defer op.Affine(f32.Affine2D{}.Offset(
-		p.position.Sub(f32.Point{X: float32(PlayerSprite.Size().X / 2), Y: float32(PlayerSprite.Size().Y / 2)}),
-	)).Push(ops).Pop()
-	PlayerSprite.Add(ops)
-	paint.PaintOp{}.Add(ops)
+func (p *Player) Draw(screen *ebiten.Image) {
+	PlayerSprite.Draw(screen, float64(p.x), float64(p.y), 0)
 }
 
 func (p *Player) Logic(g *Level) {
-	p.position.X += g.MovementVector.X
-	if p.position.X < 0 {
-		p.position.X = 0
-	} else if p.position.X > float32(screenWidth) {
-		p.position.X = float32(screenWidth)
-	}
-	if p.position.Y < 0 {
-		p.position.Y = 0
-	} else if p.position.Y > float32(screenHeight) {
-		p.position.Y = float32(screenHeight)
+	p.x += g.MovementX
+	if p.x < 0 {
+		p.x = 0
+	} else if p.x > screenWidth {
+		p.x = screenWidth
 	}
 
-	p.position.Y += g.MovementVector.Y
+	p.y += g.MovementY
+	if p.y < 0 {
+		p.y = 0
+	} else if p.y > screenHeight {
+		p.y = screenHeight
+	}
+
 	if p.shotCooldown > 0 {
 		p.shotCooldown--
 	}
 	if g.Shooting && p.shotCooldown == 0 {
 		g.Entities[&Bullet{
-			position:    f32.Point{X: p.position.X + 5, Y: p.position.Y - 5},
+			x: p.x + 5, y: p.y - 5,
 			team:        p.Team(),
 			orientation: math.Pi * .1,
 			speed:       1,
 		}] = struct{}{}
 		g.Entities[&Bullet{
-			position:    f32.Point{X: p.position.X - 5, Y: p.position.Y - 5},
+			x: p.x - 5, y: p.y - 5,
 			team:        p.Team(),
 			orientation: math.Pi * -.1,
 			speed:       1,

@@ -11,23 +11,12 @@ You should have received a copy of the GNU General Public License along with gvs
 package main
 
 import (
-	"fmt"
-	"image"
-	"image/color"
-	"os"
+	"log"
 	"sync"
-	"time"
 
-	"gioui.org/app"
-	"gioui.org/f32"
-	"gioui.org/font/gofont"
 	"gioui.org/io/key"
-	"gioui.org/io/system"
-	"gioui.org/layout"
-	"gioui.org/op"
-	"gioui.org/op/clip"
-	"gioui.org/op/paint"
-	"gioui.org/widget/material"
+	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
 const Speed = .5     // Speed is the speed of the ship (affected by Tickrate)
@@ -38,6 +27,8 @@ const (
 	screenHeight = 200
 	screenWidth  = 100
 )
+
+var scale float64 = 1
 
 // Keybindings
 const (
@@ -50,148 +41,79 @@ const (
 )
 
 func main() {
-	game := Level{
+	game := &Level{
 		CustomLogic: NewLevel1Logic(),
 		Entities: map[Entity]struct{}{
-			NewPlayer(f32.Point{X: screenWidth / 2, Y: screenHeight - 10}): {},
+			NewPlayer(screenWidth/2, screenHeight-10): {},
 		},
 		entityLock: new(sync.Mutex),
 	}
-	go func() {
-		th := material.NewTheme(gofont.Collection())
-		ops := new(op.Ops)
-		for e := range app.NewWindow(app.Size(500, 1000), app.Title("gvsbh")).Events() {
-			switch e := e.(type) {
-			case system.DestroyEvent:
-				os.Exit(0)
-			case system.FrameEvent:
-				gtx := layout.NewContext(ops, e)
-				key.InputOp{
-					Tag:  gameTag,
-					Keys: LeftKey + "|" + RightKey + "|" + UpKey + "|" + DownKey + "|" + ShootKey + "|" + PauseKey,
-				}.Add(ops)
-				for _, e := range e.Queue.Events(gameTag) {
-					// Spaghetti switches
-					switch e := e.(type) {
-					case key.Event:
-						switch e.Name {
-						case LeftKey:
-							switch e.State {
-							case key.Press:
-								game.MovementVector.X = -Speed
-							case key.Release:
-								if game.MovementVector.X == -Speed {
-									game.MovementVector.X = 0
-								}
-							}
-						case RightKey:
-							switch e.State {
-							case key.Press:
-								game.MovementVector.X = Speed
-							case key.Release:
-								if game.MovementVector.X == Speed {
-									game.MovementVector.X = 0
-								}
-							}
-						case UpKey:
-							switch e.State {
-							case key.Press:
-								game.MovementVector.Y = -Speed
-							case key.Release:
-								if game.MovementVector.Y == -Speed {
-									game.MovementVector.Y = 0
-								}
-
-							}
-						case DownKey:
-							switch e.State {
-							case key.Press:
-								game.MovementVector.Y = Speed
-							case key.Release:
-								if game.MovementVector.Y == Speed {
-									game.MovementVector.Y = 0
-								}
-							}
-						case ShootKey:
-							switch e.State {
-							case key.Press:
-								game.Shooting = true
-							case key.Release:
-								game.Shooting = false
-							}
-						case PauseKey:
-							if e.State == key.Press {
-								game.Paused = !game.Paused
-							}
-						}
-					}
-				}
-				layout.Flex{Axis: layout.Vertical}.Layout(gtx,
-					layout.Rigid(material.H6(th, fmt.Sprintf("Score: %d", game.Score)).Layout),
-					layout.Flexed(1, func(gtx layout.Context) layout.Dimensions {
-						defer clip.Rect{Max: gtx.Constraints.Max}.Push(ops).Pop()
-						paint.ColorOp{Color: color.NRGBA{A: 0xff}}.Add(ops)
-						paint.PaintOp{}.Add(ops)
-						return layout.Center.Layout(gtx, game.Layout)
-					}),
-				)
-				if !game.Paused {
-					op.InvalidateOp{}.Add(ops)
-				}
-				e.Frame(gtx.Ops)
-			}
-		}
-	}()
-	go func() {
-		for range time.Tick(time.Second / Tickrate) {
-			game.Logic()
-		}
-	}()
-	app.Main()
+	ebiten.SetWindowTitle("gvsbh")
+	ebiten.SetMaxTPS(Tickrate)
+	ebiten.SetFullscreen(true)
+	if err := ebiten.RunGame(game); err != nil {
+		log.Fatal(err)
+	}
 }
-
-var gameTag = new(struct{})
 
 type Level struct {
-	GameTime       float64
-	CustomLogic    func(g *Level)
-	CurrentTimer   int
-	Entities       map[Entity]struct{}
-	entityLock     *sync.Mutex
-	MovementVector f32.Point
-	Score          int64
-	Shooting       bool
-	Paused         bool
+	GameTime             float64
+	CustomLogic          func(g *Level)
+	CurrentTimer         int
+	Entities             map[Entity]struct{}
+	entityLock           *sync.Mutex
+	MovementX, MovementY float64
+	Score                int64
+	Shooting             bool
+	Paused               bool
 }
 
-func (g *Level) Layout(gtx layout.Context) layout.Dimensions {
-	scale := float32(gtx.Constraints.Max.X) / float32(screenWidth)
-	if s := float32(gtx.Constraints.Max.Y) / float32(screenHeight); s < scale {
-		scale = s
-	}
+func (g *Level) Draw(screen *ebiten.Image) {
 	g.entityLock.Lock()
 	defer g.entityLock.Unlock()
-	defer op.Affine(f32.Affine2D{}.Scale(f32.Point{X: 0, Y: 0}, f32.Point{X: scale, Y: scale})).Push(gtx.Ops).Pop()
-	defer clip.Rect{Max: image.Point{X: screenWidth, Y: screenHeight}}.Push(gtx.Ops).Pop()
-	paint.ColorOp{Color: color.NRGBA{0xff, 0xff, 0xff, 0xff}}.Add(gtx.Ops)
-	paint.PaintOp{}.Add(gtx.Ops)
 	for e := range g.Entities {
-		e.Draw(gtx.Ops)
+		e.Draw(screen)
 	}
-	return layout.Dimensions{Size: image.Point{X: int(float32(screenWidth) * scale), Y: int(float32(screenHeight) * scale)}}
 }
-
-func (g *Level) Logic() {
+func (g *Level) Layout(outsideWidth, outsideHeight int) (int, int) {
+	// SCaling is done manually so it will be smooth
+	newScale := float64(outsideWidth) / screenWidth
+	if s := float64(outsideHeight) / screenHeight; s < newScale {
+		scale = s
+	} else {
+		scale = newScale
+	}
+	return int(screenWidth * scale), int(screenHeight * scale)
+}
+func (g *Level) Update() (err error) {
+	if inpututil.IsKeyJustPressed(ebiten.KeyP) {
+		g.Paused = !g.Paused
+	}
 	if g.Paused {
 		return
 	}
+	g.MovementX = 0
+	if ebiten.IsKeyPressed(ebiten.KeyLeft) {
+		g.MovementX -= Speed
+	}
+	if ebiten.IsKeyPressed(ebiten.KeyRight) {
+		g.MovementX += Speed
+	}
+	g.MovementY = 0
+	if ebiten.IsKeyPressed(ebiten.KeyUp) {
+		g.MovementY -= Speed
+	}
+	if ebiten.IsKeyPressed(ebiten.KeyDown) {
+		g.MovementY += Speed
+	}
+	g.Shooting = ebiten.IsKeyPressed(ebiten.KeySpace)
 	g.entityLock.Lock()
 	defer g.entityLock.Unlock()
-	g.GameTime += 1
 	g.CustomLogic(g)
 	for e := range g.Entities {
 		e.Logic(g)
 	}
+	return
 }
 
 type SpawnTimer struct {
@@ -200,22 +122,25 @@ type SpawnTimer struct {
 }
 
 type Entity interface {
-	Position() f32.Point
-	Size() float32 // Radius of the entity
-	Draw(ops *op.Ops)
+	Position() (x float64, y float64)
+	Size() float64 // Radius of the entity
+	Draw(screen *ebiten.Image)
 	Team() Team
 	Logic(*Level) // Perform any game logic the entity has
 }
 
 func collides(a, b Entity) bool {
-	distance := a.Position().Sub(b.Position())
-	requiredDistance := a.Size() + b.Size()
-	return distance.X*distance.X+distance.Y*distance.Y < requiredDistance*requiredDistance
+	x, y := a.Position()
+	x2, y2 := b.Position()
+	x -= x2
+	y -= y2
+	return x*x+y*y < a.Size()+b.Size()
 }
 
 // Check if the entity is out of bounds
 func OOB(e Entity) bool {
-	return e.Position().X < 0 || e.Position().X > screenWidth || e.Position().Y < 0 || e.Position().Y > screenHeight
+	x, y := e.Position()
+	return x < 0 || x > screenWidth || y < 0 || y > screenHeight
 }
 
 type Team uint8

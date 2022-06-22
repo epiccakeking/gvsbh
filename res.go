@@ -13,14 +13,17 @@ package main
 import (
 	"embed"
 	"image"
+	_ "image/png"
 
-	"gioui.org/op/paint"
+	"github.com/hajimehoshi/ebiten/v2"
 )
 
 //go:embed res
 var res embed.FS
 
-func Resource(path string) paint.ImageOp {
+type Sprite struct{ *ebiten.Image }
+
+func Resource(path string) Sprite {
 	f, err := res.Open(path)
 	if err != nil {
 		panic(err)
@@ -30,5 +33,16 @@ func Resource(path string) paint.ImageOp {
 	if err != nil {
 		panic(err)
 	}
-	return paint.NewImageOp(i)
+	return Sprite{ebiten.NewImageFromImage(i)}
+}
+
+// Draw (with rotation)
+func (s Sprite) Draw(screen *ebiten.Image, x, y float64, orientation float64) {
+	op := &ebiten.DrawImageOptions{}
+	sizeX, sizeY := s.Size()
+	op.GeoM.Translate(float64(-sizeX/2), float64(-sizeY/2))
+	op.GeoM.Rotate(orientation)
+	op.GeoM.Translate(x, y)
+	op.GeoM.Scale(scale, scale)
+	screen.DrawImage(s.Image, op)
 }

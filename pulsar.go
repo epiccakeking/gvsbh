@@ -13,9 +13,7 @@ package main
 import (
 	"math"
 
-	"gioui.org/f32"
-	"gioui.org/op"
-	"gioui.org/op/paint"
+	"github.com/hajimehoshi/ebiten/v2"
 )
 
 const PulsarSlideTicks = Tickrate / 2
@@ -23,27 +21,29 @@ const PulsarSlideTicks = Tickrate / 2
 var PulsarSprite = Resource("res/Pulsar.png")
 
 type Pulsar struct {
-	targetPosition f32.Point
-	health         int
-	slideTicks     int
-	returnTimer    int
-	spin           float32
-	shotCooldown   int
+	targetY, x, y float64
+	health        int
+	slideTicks    int
+	returnTimer   int
+	spin          float64
+	shotCooldown  int
 }
 
-func NewPulsar(targetPosition f32.Point) *Pulsar {
+func NewPulsar(x, y float64) *Pulsar {
 	return &Pulsar{
-		targetPosition: targetPosition,
-		health:         10,
-		returnTimer:    Tickrate * 3,
+		x:           x,
+		y:           y,
+		targetY:     y,
+		health:      10,
+		returnTimer: Tickrate * 3,
 	}
 }
 
-func (p *Pulsar) Position() f32.Point {
-	return f32.Point{X: p.targetPosition.X, Y: p.targetPosition.Y * float32(p.slideTicks) / float32(PulsarSlideTicks)}
+func (p *Pulsar) Position() (x, y float64) {
+	return p.x, p.y
 }
 
-func (p *Pulsar) Size() float32 {
+func (p *Pulsar) Size() float64 {
 	return 5
 }
 
@@ -51,16 +51,12 @@ func (p *Pulsar) Team() Team {
 	return EnemyTeam
 }
 
-func (p *Pulsar) Draw(ops *op.Ops) {
-	defer op.Affine(f32.Affine2D{}.Rotate(f32.Point{X: float32(PulsarSprite.Size().X) / 2, Y: float32(PulsarSprite.Size().Y) / 2}, p.spin).Offset(
-		p.Position().Sub(f32.Point{X: float32(PulsarSprite.Size().X) / 2, Y: float32(PulsarSprite.Size().Y) / 2}),
-	)).Push(ops).Pop()
-	PulsarSprite.Add(ops)
-	paint.PaintOp{}.Add(ops)
+func (p *Pulsar) Draw(screen *ebiten.Image) {
+	PulsarSprite.Draw(screen, p.x, p.y, p.spin)
 }
 
 func (p *Pulsar) Logic(g *Level) {
-	p.spin += float32(2 * math.Pi / float64(Tickrate))
+	p.spin += 2 * math.Pi / float64(Tickrate)
 	if p.returnTimer > 0 {
 		if p.slideTicks < PulsarSlideTicks {
 			p.slideTicks++
@@ -69,10 +65,10 @@ func (p *Pulsar) Logic(g *Level) {
 			if p.shotCooldown > 0 {
 				p.shotCooldown--
 			} else {
-				g.Entities[&Bullet{position: p.targetPosition, team: p.Team(), orientation: p.spin, speed: .25}] = struct{}{}
-				g.Entities[&Bullet{position: p.targetPosition, team: p.Team(), orientation: p.spin + math.Pi/2, speed: .25}] = struct{}{}
-				g.Entities[&Bullet{position: p.targetPosition, team: p.Team(), orientation: p.spin + math.Pi, speed: .25}] = struct{}{}
-				g.Entities[&Bullet{position: p.targetPosition, team: p.Team(), orientation: p.spin + math.Pi*3/2, speed: .25}] = struct{}{}
+				g.Entities[&Bullet{x: p.x, y: p.y, team: p.Team(), orientation: p.spin, speed: .25}] = struct{}{}
+				g.Entities[&Bullet{x: p.x, y: p.y, team: p.Team(), orientation: p.spin + math.Pi/2, speed: .25}] = struct{}{}
+				g.Entities[&Bullet{x: p.x, y: p.y, team: p.Team(), orientation: p.spin + math.Pi, speed: .25}] = struct{}{}
+				g.Entities[&Bullet{x: p.x, y: p.y, team: p.Team(), orientation: p.spin + math.Pi*3/2, speed: .25}] = struct{}{}
 				p.shotCooldown = Tickrate / 5
 			}
 		}
@@ -82,6 +78,7 @@ func (p *Pulsar) Logic(g *Level) {
 			delete(g.Entities, p)
 		}
 	}
+	p.y = p.targetY * float64(p.slideTicks) / float64(PulsarSlideTicks)
 }
 
 func (p *Pulsar) Hurt(g *Level, damage int) {

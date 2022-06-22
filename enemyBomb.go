@@ -13,30 +13,28 @@ package main
 import (
 	"math"
 
-	"gioui.org/f32"
-	"gioui.org/op"
-	"gioui.org/op/paint"
+	"github.com/hajimehoshi/ebiten/v2"
 )
 
 var EnemyBombSprite = Resource("res/EnemyBomb.png")
 
 type EnemyBomb struct {
-	position f32.Point
-	health   int
+	x, y   float64
+	health int
 }
 
-func NewBomb(position f32.Point) *EnemyBomb {
+func NewBomb(x, y float64) *EnemyBomb {
 	return &EnemyBomb{
-		position: position,
-		health:   3,
+		x: x, y: y,
+		health: 3,
 	}
 }
 
-func (b *EnemyBomb) Position() f32.Point {
-	return b.position
+func (b *EnemyBomb) Position() (x, y float64) {
+	return float64(b.x), float64(b.y)
 }
 
-func (b *EnemyBomb) Size() float32 {
+func (b *EnemyBomb) Size() float64 {
 	return 5
 }
 
@@ -44,17 +42,13 @@ func (b *EnemyBomb) Team() Team {
 	return EnemyTeam
 }
 
-func (b *EnemyBomb) Draw(ops *op.Ops) {
-	defer op.Affine(f32.Affine2D{}.Offset(
-		b.position.Sub(f32.Point{X: float32(EnemyBombSprite.Size().X / 2), Y: float32(EnemyBombSprite.Size().Y / 2)}),
-	)).Push(ops).Pop()
-	EnemyBombSprite.Add(ops)
-	paint.PaintOp{}.Add(ops)
+func (b *EnemyBomb) Draw(screen *ebiten.Image) {
+	EnemyBombSprite.Draw(screen, float64(b.x), float64(b.y), 0)
 }
 
 func (b *EnemyBomb) Logic(g *Level) {
-	b.position.Y += .5
-	if b.position.Y > float32(screenHeight) {
+	b.y += .5
+	if b.y > screenHeight {
 		delete(g.Entities, b)
 	}
 	for e := range g.Entities {
@@ -74,7 +68,7 @@ func (b *EnemyBomb) Hurt(g *Level, damage int) {
 		g.Score += BombScore
 		// Spawn bullets as fragments
 		for i := 0; i < 20; i++ {
-			g.Entities[&Bullet{position: b.position, team: NeitherTeam, orientation: float32(i) * (2 * math.Pi / 10), speed: .5}] = struct{}{}
+			g.Entities[&Bullet{x: b.x, y: b.y, team: NeitherTeam, orientation: float64(i) * (2 * math.Pi / 10), speed: .5}] = struct{}{}
 		}
 	}
 }

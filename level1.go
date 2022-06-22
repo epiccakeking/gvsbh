@@ -13,8 +13,6 @@ package main
 import (
 	"math"
 	"math/rand"
-
-	"gioui.org/f32"
 )
 
 func NewLevel1Logic() func(g *Level) {
@@ -30,7 +28,7 @@ func NewLevel1Logic() func(g *Level) {
 			}
 		case 1:
 			if tick%(Tickrate/3) == 0 {
-				g.Entities[NewBomb(f32.Point{X: float32(rng.Int63()) / math.MaxInt64 * screenWidth})] = struct{}{}
+				g.Entities[NewBomb(float64(rng.Int63())/math.MaxInt64*screenWidth, 0)] = struct{}{}
 			}
 			if tick == Tickrate*10 {
 				phase++
@@ -38,9 +36,9 @@ func NewLevel1Logic() func(g *Level) {
 			}
 		case 2:
 			if tick == Tickrate {
-				g.Entities[NewPulsar(f32.Point{X: 25, Y: 50})] = struct{}{}
+				g.Entities[NewPulsar(25, 50)] = struct{}{}
 			} else if tick == Tickrate*2 {
-				g.Entities[NewPulsar(f32.Point{X: screenWidth - 25, Y: 50})] = struct{}{}
+				g.Entities[NewPulsar(screenWidth-25, 50)] = struct{}{}
 			}
 			if tick == Tickrate*10 {
 				phase++

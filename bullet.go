@@ -13,40 +13,34 @@ package main
 import (
 	"math"
 
-	"gioui.org/f32"
-	"gioui.org/op"
-	"gioui.org/op/paint"
+	"github.com/hajimehoshi/ebiten/v2"
 )
 
 var BulletSprite = Resource("res/Bullet.png")
 
 type Bullet struct {
-	position    f32.Point
+	x, y        float64
 	team        Team
-	orientation float32
-	speed       float32
+	orientation float64
+	speed       float64
 }
 
-func (b *Bullet) Position() f32.Point {
-	return b.position
+func (b *Bullet) Position() (x, y float64) {
+	return b.x, b.y
 }
-func (b *Bullet) Size() float32 {
+func (b *Bullet) Size() float64 {
 	return 1
 }
 func (b *Bullet) Team() Team {
 	return b.team
 }
-func (b *Bullet) Draw(ops *op.Ops) {
-	defer op.Affine(f32.Affine2D{}.Rotate(f32.Point{}, b.orientation).Offset(
-		b.position.Sub(f32.Point{X: float32(BulletSprite.Size().X / 2), Y: float32(BulletSprite.Size().Y / 2)}),
-	)).Push(ops).Pop()
-	BulletSprite.Add(ops)
-	paint.PaintOp{}.Add(ops)
+func (b *Bullet) Draw(screen *ebiten.Image) {
+	BulletSprite.Draw(screen, b.x, b.y, b.orientation)
 }
 func (b *Bullet) Logic(g *Level) {
 	const damage = 1
-	b.position.Y -= float32(math.Cos(float64(b.orientation))) * b.speed
-	b.position.X += float32(math.Sin(float64(b.orientation))) * b.speed
+	b.y -= math.Cos(b.orientation) * b.speed
+	b.x += math.Sin(b.orientation) * b.speed
 	if OOB(b) {
 		delete(g.Entities, b)
 	}
