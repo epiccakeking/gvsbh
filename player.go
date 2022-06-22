@@ -48,6 +48,18 @@ func (p *Player) Draw(screen *ebiten.Image) {
 }
 
 func (p *Player) Logic(g *Level) {
+	if g.UseTouch {
+		if g.TouchX < p.x {
+			g.MovementX = -Speed
+		} else if g.TouchX > p.x {
+			g.MovementX = Speed
+		}
+		if g.TouchY < p.y {
+			g.MovementY = -Speed
+		} else if g.TouchY > p.y {
+			g.MovementY = Speed
+		}
+	}
 	p.x += g.MovementX
 	if p.x < 0 {
 		p.x = 0

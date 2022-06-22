@@ -29,6 +29,7 @@ const (
 )
 
 var scale float64 = 1
+var touches, touchQueue []ebiten.TouchID
 
 // Keybindings
 const (
@@ -66,6 +67,9 @@ type Level struct {
 	Score                int64
 	Shooting             bool
 	Paused               bool
+	// Touch related information
+	UseTouch       bool
+	TouchX, TouchY float64
 }
 
 func (g *Level) Draw(screen *ebiten.Image) {
@@ -107,6 +111,27 @@ func (g *Level) Update() (err error) {
 		g.MovementY += Speed
 	}
 	g.Shooting = ebiten.IsKeyPressed(ebiten.KeySpace)
+	touches = ebiten.AppendTouchIDs(touches[:0])
+	touchQueue = inpututil.AppendJustPressedTouchIDs(touchQueue)
+	if len(touches) > 0 {
+		if len(touches) > 1 {
+			g.Shooting = true
+		}
+		g.UseTouch = true
+		var x, y int
+		for len(touchQueue) > 0 {
+			x, y = ebiten.TouchPosition(touchQueue[0])
+			if x == 0 && y == 0 {
+				touchQueue = touchQueue[1:]
+			} else {
+				break
+			}
+		}
+		g.TouchX = float64(x) / scale
+		g.TouchY = float64(y) / scale
+	} else {
+		g.UseTouch = false
+	}
 	g.entityLock.Lock()
 	defer g.entityLock.Unlock()
 	g.CustomLogic(g)
