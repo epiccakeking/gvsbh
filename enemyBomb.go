@@ -68,7 +68,7 @@ func (b *EnemyBomb) Hurt(g *Level, damage int) {
 		g.Score += BombScore
 		// Spawn bullets as fragments
 		for i := 0; i < 20; i++ {
-			g.Entities[&Bullet{x: b.x, y: b.y, team: NeitherTeam, orientation: float64(i) * (2 * math.Pi / 10), speed: .5}] = struct{}{}
+			g.Entities[&Bullet{x: b.x, y: b.y, team: NeitherTeam, orientation: float64(i) * (math.Pi / 10), speed: .5}] = struct{}{}
 		}
 	}
 }
