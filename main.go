@@ -134,7 +134,8 @@ func collides(a, b Entity) bool {
 	x2, y2 := b.Position()
 	x -= x2
 	y -= y2
-	return x*x+y*y < a.Size()+b.Size()
+	d := a.Size() + b.Size()
+	return x*x+y*y < d*d
 }
 
 // Check if the entity is out of bounds
