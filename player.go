@@ -78,18 +78,18 @@ func (p *Player) Logic(g *Level) {
 		p.shotCooldown--
 	}
 	if g.Shooting && p.shotCooldown == 0 {
-		g.Entities[&Bullet{
+		g.AddEntity(&Bullet{
 			x: p.x + 5, y: p.y - 5,
 			team:        p.Team(),
 			orientation: math.Pi * .1,
 			speed:       1,
-		}] = struct{}{}
-		g.Entities[&Bullet{
+		})
+		g.AddEntity(&Bullet{
 			x: p.x - 5, y: p.y - 5,
 			team:        p.Team(),
 			orientation: math.Pi * -.1,
 			speed:       1,
-		}] = struct{}{}
+		})
 		p.shotCooldown = 20
 	}
 }

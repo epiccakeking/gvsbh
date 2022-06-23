@@ -65,10 +65,10 @@ func (p *Pulsar) Logic(g *Level) {
 			if p.shotCooldown > 0 {
 				p.shotCooldown--
 			} else {
-				g.Entities[&Bullet{x: p.x, y: p.y, team: p.Team(), orientation: p.spin, speed: .25}] = struct{}{}
-				g.Entities[&Bullet{x: p.x, y: p.y, team: p.Team(), orientation: p.spin + math.Pi/2, speed: .25}] = struct{}{}
-				g.Entities[&Bullet{x: p.x, y: p.y, team: p.Team(), orientation: p.spin + math.Pi, speed: .25}] = struct{}{}
-				g.Entities[&Bullet{x: p.x, y: p.y, team: p.Team(), orientation: p.spin + math.Pi*3/2, speed: .25}] = struct{}{}
+				g.AddEntity(&Bullet{x: p.x, y: p.y, team: p.Team(), orientation: p.spin, speed: .25})
+				g.AddEntity(&Bullet{x: p.x, y: p.y, team: p.Team(), orientation: p.spin + math.Pi/2, speed: .25})
+				g.AddEntity(&Bullet{x: p.x, y: p.y, team: p.Team(), orientation: p.spin + math.Pi, speed: .25})
+				g.AddEntity(&Bullet{x: p.x, y: p.y, team: p.Team(), orientation: p.spin + math.Pi*3/2, speed: .25})
 				p.shotCooldown = Tickrate / 5
 			}
 		}
