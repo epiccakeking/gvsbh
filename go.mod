@@ -2,10 +2,7 @@ module github.com/epiccakeking/gvsbh
 
 go 1.18
 
-require (
-	gioui.org v0.0.0-20220615093012-72669e19bc29
-	github.com/hajimehoshi/ebiten/v2 v2.3.4
-)
+require github.com/hajimehoshi/ebiten/v2 v2.3.4
 
 require (
 	github.com/go-gl/glfw/v3.3/glfw v0.0.0-20220320163800-277f93cfa958 // indirect

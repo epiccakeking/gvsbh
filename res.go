@@ -28,7 +28,6 @@ func Resource(path string) Sprite {
 	if err != nil {
 		panic(err)
 	}
-	defer f.Close()
 	i, _, err := image.Decode(f)
 	if err != nil {
 		panic(err)
@@ -36,7 +35,7 @@ func Resource(path string) Sprite {
 	return Sprite{ebiten.NewImageFromImage(i)}
 }
 
-// Draw (with rotation)
+// Draw
 func (s Sprite) Draw(screen *ebiten.Image, x, y float64, orientation float64) {
 	op := &ebiten.DrawImageOptions{}
 	sizeX, sizeY := s.Size()
