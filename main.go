@@ -58,15 +58,16 @@ func main() {
 }
 
 type Level struct {
-	GameTime             float64
-	CustomLogic          func(g *Level)
-	CurrentTimer         int
-	Entities             map[Entity]struct{}
-	entityLock           *sync.Mutex
-	MovementX, MovementY float64
-	Score                int64
-	Shooting             bool
-	Paused               bool
+	GameTime                       float64
+	CustomLogic                    func(g *Level)
+	CurrentTimer                   int
+	Entities                       map[Entity]struct{}
+	entityQueue, removeEntityQueue []Entity
+	entityLock                     *sync.Mutex
+	MovementX, MovementY           float64
+	Score                          int64
+	Shooting                       bool
+	Paused                         bool
 	// Touch related information
 	UseTouch       bool
 	TouchX, TouchY float64
@@ -132,13 +133,33 @@ func (g *Level) Update() (err error) {
 	} else {
 		g.UseTouch = false
 	}
-	g.entityLock.Lock()
-	defer g.entityLock.Unlock()
-	g.CustomLogic(g)
 	for e := range g.Entities {
 		e.Logic(g)
 	}
+	g.entityLock.Lock()
+	defer g.entityLock.Unlock()
+	g.CustomLogic(g)
+	for i, e := range g.entityQueue {
+		g.Entities[e] = struct{}{}
+		g.entityQueue[i] = nil
+	}
+	g.entityQueue = g.entityQueue[:0]
+	for i, e := range g.removeEntityQueue {
+		delete(g.Entities, e)
+		g.removeEntityQueue[i] = nil
+	}
+	g.removeEntityQueue = g.removeEntityQueue[:0]
 	return
+}
+
+// Queue entity for addition
+func (g *Level) AddEntity(e Entity) {
+	g.entityQueue = append(g.entityQueue, e)
+}
+
+// Queue entity for addition
+func (g *Level) RemoveEntity(e Entity) {
+	g.removeEntityQueue = append(g.removeEntityQueue, e)
 }
 
 type SpawnTimer struct {

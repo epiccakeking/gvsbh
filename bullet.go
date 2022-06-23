@@ -42,13 +42,13 @@ func (b *Bullet) Logic(g *Level) {
 	b.y -= math.Cos(b.orientation) * b.speed
 	b.x += math.Sin(b.orientation) * b.speed
 	if OOB(b) {
-		delete(g.Entities, b)
+		g.RemoveEntity(b)
 	}
 	for e := range g.Entities {
 		if e.Team() != b.team && collides(b, e) {
 			if e, ok := e.(Damageable); ok {
 				e.Hurt(g, damage)
-				delete(g.Entities, b)
+				g.RemoveEntity(b)
 			}
 		}
 	}

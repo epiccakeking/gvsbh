@@ -49,26 +49,29 @@ func (b *EnemyBomb) Draw(screen *ebiten.Image) {
 func (b *EnemyBomb) Logic(g *Level) {
 	b.y += .5
 	if b.y > screenHeight {
-		delete(g.Entities, b)
+		g.RemoveEntity(b)
 	}
 	for e := range g.Entities {
 		if e.Team() != b.Team() && collides(b, e) {
 			if e, ok := e.(Damageable); ok {
 				e.Hurt(g, 10)
-				delete(g.Entities, b)
+				g.RemoveEntity(b)
 			}
 		}
 	}
 }
 
 func (b *EnemyBomb) Hurt(g *Level, damage int) {
+	if b.health <= 0 {
+		return
+	}
 	b.health -= damage
 	if b.health <= 0 {
-		delete(g.Entities, b)
+		g.RemoveEntity(b)
 		g.Score += BombScore
 		// Spawn bullets as fragments
 		for i := 0; i < 20; i++ {
-			g.Entities[&Bullet{x: b.x, y: b.y, team: NeitherTeam, orientation: float64(i) * (math.Pi / 10), speed: .5}] = struct{}{}
+			g.AddEntity(&Bullet{x: b.x, y: b.y, team: NeitherTeam, orientation: float64(i) * (math.Pi / 10), speed: .5})
 		}
 	}
 }

@@ -97,6 +97,6 @@ func (p *Player) Logic(g *Level) {
 func (p *Player) Hurt(g *Level, damage int) {
 	p.health -= damage
 	if p.health <= 0 {
-		delete(g.Entities, p)
+		g.RemoveEntity(p)
 	}
 }

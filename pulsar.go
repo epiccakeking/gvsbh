@@ -75,7 +75,7 @@ func (p *Pulsar) Logic(g *Level) {
 	} else {
 		p.slideTicks--
 		if p.slideTicks <= 0 {
-			delete(g.Entities, p)
+			g.RemoveEntity(p)
 		}
 	}
 	p.y = p.targetY * float64(p.slideTicks) / float64(PulsarSlideTicks)
@@ -84,7 +84,7 @@ func (p *Pulsar) Logic(g *Level) {
 func (p *Pulsar) Hurt(g *Level, damage int) {
 	p.health -= damage
 	if p.health <= 0 {
-		delete(g.Entities, p)
+		g.RemoveEntity(p)
 		g.Score += PulsarScore
 	}
 }
