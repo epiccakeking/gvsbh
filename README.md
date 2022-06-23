@@ -13,6 +13,10 @@ go run github.com/epiccakeking/gvsbh@master
 
 ## Controls
 
+### Keyboard
 Arrow keys - Move
 Space - Shoot
 P - Pause/Resume
+
+### Touch
+The player moves towards the first touch. Touch with a second finger to shoot. Currently no way to pause.
