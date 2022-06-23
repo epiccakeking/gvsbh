@@ -14,7 +14,6 @@ import (
 	"log"
 	"sync"
 
-	"gioui.org/io/key"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
@@ -33,12 +32,12 @@ var touches, touchQueue []ebiten.TouchID
 
 // Keybindings
 const (
-	LeftKey  = key.NameLeftArrow
-	RightKey = key.NameRightArrow
-	UpKey    = key.NameUpArrow
-	DownKey  = key.NameDownArrow
-	ShootKey = key.NameSpace
-	PauseKey = "P"
+	KeyLeft  = ebiten.KeyLeft
+	KeyRight = ebiten.KeyRight
+	KeyUp    = ebiten.KeyUp
+	KeyDown  = ebiten.KeyDown
+	KeyShoot = ebiten.KeySpace
+	KeyPause = ebiten.KeyP
 )
 
 func main() {
@@ -91,27 +90,27 @@ func (g *Level) Layout(outsideWidth, outsideHeight int) (int, int) {
 	return int(screenWidth * scale), int(screenHeight * scale)
 }
 func (g *Level) Update() (err error) {
-	if inpututil.IsKeyJustPressed(ebiten.KeyP) {
+	if inpututil.IsKeyJustPressed(KeyPause) {
 		g.Paused = !g.Paused
 	}
 	if g.Paused {
 		return
 	}
 	g.MovementX = 0
-	if ebiten.IsKeyPressed(ebiten.KeyLeft) {
+	if ebiten.IsKeyPressed(KeyLeft) {
 		g.MovementX -= Speed
 	}
-	if ebiten.IsKeyPressed(ebiten.KeyRight) {
+	if ebiten.IsKeyPressed(KeyRight) {
 		g.MovementX += Speed
 	}
 	g.MovementY = 0
-	if ebiten.IsKeyPressed(ebiten.KeyUp) {
+	if ebiten.IsKeyPressed(KeyUp) {
 		g.MovementY -= Speed
 	}
-	if ebiten.IsKeyPressed(ebiten.KeyDown) {
+	if ebiten.IsKeyPressed(KeyDown) {
 		g.MovementY += Speed
 	}
-	g.Shooting = ebiten.IsKeyPressed(ebiten.KeySpace)
+	g.Shooting = ebiten.IsKeyPressed(KeyShoot)
 	touches = ebiten.AppendTouchIDs(touches[:0])
 	touchQueue = inpututil.AppendJustPressedTouchIDs(touchQueue)
 	if len(touches) > 0 {
