@@ -42,9 +42,21 @@ func NewLevel1Logic() func(g *Level) {
 			} else if tick == Tickrate*2 {
 				g.Entities[NewPulsar(screenWidth-25, 50)] = struct{}{}
 			}
-			if tick == Tickrate*10 {
+			numEnemies := 0
+			for e := range g.Entities {
+				if e.Team() == EnemyTeam {
+					numEnemies++
+				}
+			}
+			if numEnemies == 0 || tick == Tickrate*10 {
 				phase++
 				tick = 0
+			}
+		case 3:
+			phase++
+			tick = 0
+			for _, e := range NewSkelly(screenWidth/2, 50) {
+				g.AddEntity(e)
 			}
 		}
 		tick++
