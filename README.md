@@ -15,7 +15,9 @@ go run github.com/epiccakeking/gvsbh@master
 
 ### Keyboard
 Arrow keys - Move
+
 Space - Shoot
+
 P - Pause/Resume
 
 ### Touch
