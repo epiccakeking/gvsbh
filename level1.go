@@ -30,7 +30,7 @@ func NewLevel1Logic() func(g *Level) {
 			}
 		case 1:
 			if tick%(Tickrate/3) == 0 {
-				g.Entities[NewBomb(float64(rng.Int63())/math.MaxInt64*screenWidth, 0)] = struct{}{}
+				g.AddEntity(NewBomb(float64(rng.Int63())/math.MaxInt64*screenWidth, 0))
 			}
 			if tick == Tickrate*10 {
 				phase++
@@ -38,21 +38,29 @@ func NewLevel1Logic() func(g *Level) {
 			}
 		case 2:
 			if tick == Tickrate {
-				g.Entities[NewPulsar(25, 50)] = struct{}{}
-			} else if tick == Tickrate*2 {
-				g.Entities[NewPulsar(screenWidth-25, 50)] = struct{}{}
+				g.AddEntity(NewPulsar(25, 50))
+			} else if tick >= Tickrate*2 {
+				g.AddEntity(NewPulsar(screenWidth-25, 50))
+				phase++
+				tick = 0
 			}
+		case 3:
 			numEnemies := 0
 			for e := range g.Entities {
 				if e.Team() == EnemyTeam {
 					numEnemies++
 				}
 			}
-			if numEnemies == 0 || tick == Tickrate*10 {
+			// Prevent advancing stage if there are still enemies
+			if numEnemies != 0 {
+				tick = 0
+			}
+			if tick > Tickrate {
 				phase++
 				tick = 0
 			}
-		case 3:
+
+		case 4:
 			phase++
 			tick = 0
 			for _, e := range NewSkelly(screenWidth/2, 50) {
