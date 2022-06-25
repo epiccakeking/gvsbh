@@ -120,7 +120,7 @@ func (a *SkellyArm) Logic(g *Level) {
 	}
 	if a.shotTimer <= 0 {
 		a.shotTimer = Tickrate
-		g.AddEntity(&Bullet{x: x, y: y, team: a.Team(), speed: 1, orientation: a.orientation})
+		g.AddEntity(&AirburstRocket{x: x, y: y, team: a.Team(), speed: 1, orientation: a.orientation})
 	} else {
 		a.shotTimer--
 	}
