@@ -21,14 +21,15 @@ import (
 var SkellySprite = Resource("res/SkellyHead.png")
 
 type Skelly struct {
-	x, y   float64
-	team   Team
-	health int
+	x, y             float64
+	team             Team
+	health           int
+	moveLeft, moveUp bool // Control bouncing behviour
 }
 
 // Skelly is made of multiple entities, so it returns all parts.
 func NewSkelly(x, y float64) []Entity {
-	head := &Skelly{x: x, y: y, team: EnemyTeam, health: 100}
+	head := &Skelly{x: x, y: y, team: EnemyTeam, health: 200}
 	return []Entity{
 		head,
 		&SkellyArm{Parent: head, offsetX: -20, offsetY: 10, health: 100},
@@ -49,10 +50,34 @@ func (s *Skelly) Draw(screen *ebiten.Image) {
 	SkellySprite.Draw(screen, s.x, s.y, 0)
 }
 func (s *Skelly) Logic(g *Level) {
+	const skellySpeed = .2
+	if s.x > screenWidth-25 {
+		s.moveLeft = true
+	} else if s.x < 25 {
+		s.moveLeft = false
+	}
+	if s.y > screenHeight/2 {
+		s.moveUp = true
+	} else if s.y < 10 {
+		s.moveUp = false
+	}
+	if s.moveLeft {
+		s.x -= skellySpeed
+	} else {
+		s.x += skellySpeed
+	}
+	if s.moveUp {
+		s.y -= skellySpeed
+	} else {
+		s.y += skellySpeed
+	}
 }
 
 func (s *Skelly) Hurt(g *Level, damage int) {
 	s.health -= damage
+	if s.health <= 0 {
+		g.RemoveEntity(s)
+	}
 }
 
 var SkellyArmRightSprite = Resource("res/SkellyArmRight.png")
@@ -128,4 +153,8 @@ func (a *SkellyArm) Logic(g *Level) {
 
 func (a *SkellyArm) Hurt(g *Level, damage int) {
 	a.health -= damage
+	if a.health <= 0 {
+		a.Parent.Hurt(g, 50) // "Recoil" damage
+		g.RemoveEntity(a)
+	}
 }

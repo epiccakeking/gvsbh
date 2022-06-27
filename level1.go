@@ -63,7 +63,7 @@ func NewLevel1Logic() func(g *Level) {
 		case 4:
 			phase++
 			tick = 0
-			for _, e := range NewSkelly(screenWidth/2, 50) {
+			for _, e := range NewSkelly(screenWidth/2, -30) {
 				g.AddEntity(e)
 			}
 		}
